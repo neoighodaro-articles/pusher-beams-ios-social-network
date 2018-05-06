@@ -7,14 +7,20 @@
 //
 
 import UIKit
+import NotificationBannerSwift
 
 class SignupViewController: UIViewController {
 
-    @IBOutlet weak var signupButton: UIBarButtonItem!
     @IBOutlet weak var nameTextField: UITextField!
+
     @IBOutlet weak var emailTextField: UITextField!
-    @IBOutlet weak var passwordTextfield: UITextField!
     
+    @IBOutlet weak var passwordTextfield: UITextField!
+
+    @IBOutlet weak var signupButton: UIBarButtonItem!
+    
+    // MARK: View lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -25,37 +31,51 @@ class SignupViewController: UIViewController {
         passwordTextfield.addTarget(self, action: #selector(textFieldChanged(_:)), for: .editingChanged)
     }
     
-    private func textFields() -> AuthService.SignupCredentials? {
-        guard let name = nameTextField.text, let email = emailTextField.text, let pass = passwordTextfield.text else {
-            return nil
-        }
-        
-        return (name, email, pass)
+    // MARK: IBAction methods
+    
+    @IBAction func closeButtonWasPressed(_ sender: Any? = nil) {
+        dismiss(animated: true, completion: nil)
     }
     
-    @objc private func activateSignupButtonIfNecessary() {
-        guard let the = textFields() else { return }
+    @IBAction func signupButtonWasPressed(_ sender: Any) {
+        guard let credentials = textFields(), signupButton.isEnabled else {
+            return
+        }
         
-        signupButton.isEnabled = !the.name.isEmpty && !the.email.isEmpty && !the.password.isEmpty
+        ApiService.shared.signup(credentials: credentials) { token, error in
+            guard let token = token, error == nil else {
+                return StatusBarNotificationBanner(title: "Signup failed. Try again.", style: .danger).show()
+            }
+            
+            AuthService.shared.saveToken(token).then {
+                self.closeButtonWasPressed()
+            }
+        }
+    }
+    
+}
+
+
+// MARK: - Helper methods
+
+private extension SignupViewController {
+    
+    func textFields() -> AuthService.SignupCredentials? {
+        if let name = nameTextField.text, let email = emailTextField.text, let pass = passwordTextfield.text {
+            return (name, email, pass)
+        }
+        
+        return nil
+    }
+
+    func activateSignupButtonIfNecessary() {
+        if let field = textFields() {
+            signupButton.isEnabled = !field.name.isEmpty && !field.email.isEmpty && !field.password.isEmpty
+        }
     }
     
     @objc func textFieldChanged(_ sender: UITextField) {
         activateSignupButtonIfNecessary()
     }
-
-    @IBAction func closeButtonWasPressed(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
-    }
     
-    @IBAction func signupButtonWasPressed(_ sender: Any) {
-        guard let credentials = textFields() else { return }
-        
-        ApiService.shared.signup(credentials: credentials) { token, error in
-            guard let token = token, error == nil else { return print("Signup failed") }
-            
-            AuthService.shared.saveToken(token).then {
-                self.dismiss(animated: true, completion: nil)
-            }
-        }
-    }
 }

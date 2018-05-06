@@ -15,8 +15,6 @@ class UserSettingController extends Controller
     public function update(Request $request)
     {
         $settings = $request->validate([
-            'notification_followers' => 'in:Off,Everyone',
-            'notification_likes' => 'in:Off,Following,Everyone',
             'notification_comments' => 'in:Off,Following,Everyone',
         ]);
 

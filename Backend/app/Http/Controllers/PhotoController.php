@@ -45,7 +45,7 @@ class PhotoController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $photo->load(['user', 'likes', 'comments'])
+            'data' => $photo->load(['user', 'comments'])
         ]);
     }
 

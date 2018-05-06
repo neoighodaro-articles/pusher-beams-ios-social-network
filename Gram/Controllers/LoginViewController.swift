@@ -7,12 +7,17 @@
 //
 
 import UIKit
+import NotificationBannerSwift
 
 class LoginViewController: UIViewController {
 
-    @IBOutlet weak var loginButton: UIBarButtonItem!
     @IBOutlet weak var emailTextField: UITextField!
+    
     @IBOutlet weak var passwordTextField: UITextField!
+
+    @IBOutlet weak var loginButton: UIBarButtonItem!
+    
+    // MARK: View lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,37 +28,51 @@ class LoginViewController: UIViewController {
         passwordTextField.addTarget(self, action: #selector(textFieldChanged(_:)), for: .editingChanged)
     }
     
-    private func textFields() -> AuthService.LoginCredentials? {
-        guard let email = emailTextField.text, let password = passwordTextField.text else {
-            return nil
-        }
-        
-        return (email, password)
-    }
-    
-    @objc func textFieldChanged(_ sender: UITextField) {
-        activateLoginButtonIfNecessary()
-    }
-    
-    @objc private func activateLoginButtonIfNecessary() {
-        guard let the = textFields() else { return }
-        
-        loginButton.isEnabled = !the.email.isEmpty && !the.password.isEmpty
-    }
+    // MARK: IBAction methods
 
-    @IBAction func closeButtonWasPressed(_ sender: Any) {
+    @IBAction func closeButtonWasPressed(_ sender: Any? = nil) {
         dismiss(animated: true, completion: nil)
     }
     
     @IBAction func loginButtonWasPressed(_ sender: Any) {
-        guard let credentials = textFields() else { return }
+        guard let credentials = textFields(), loginButton.isEnabled else {
+            return
+        }
         
         ApiService.shared.login(credentials: credentials) { token, error in
-            guard let token = token, error == nil else { return print("Login failed") }
+            guard let token = token, error == nil else {
+                return StatusBarNotificationBanner(title: "Login failed, try again.", style: .danger).show()
+            }
             
             AuthService.shared.saveToken(token).then {
-                self.dismiss(animated: true, completion: nil)
+                self.closeButtonWasPressed()
             }
         }
     }
+    
+}
+
+
+// MARK: - Helper methods
+
+private extension LoginViewController {
+    
+    func textFields() -> AuthService.LoginCredentials? {
+        if let email = emailTextField.text, let password = passwordTextField.text {
+            return (email, password)
+        }
+        
+        return nil
+    }
+    
+    func activateLoginButtonIfNecessary() {
+        if let field = textFields() {
+            loginButton.isEnabled = !field.email.isEmpty && !field.password.isEmpty
+        }
+    }
+
+    @objc func textFieldChanged(_ sender: UITextField) {
+        activateLoginButtonIfNecessary()
+    }
+
 }

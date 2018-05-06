@@ -9,6 +9,7 @@
 import UIKit
 import Alamofire
 import NotificationBannerSwift
+import PushNotifications
 
 class TimelineTableViewController: UITableViewController {
     
@@ -105,16 +106,6 @@ extension TimelineTableViewController {
 
 extension TimelineTableViewController: PhotoListCellDelegate {
     
-    func likeButtonWasTapped(at indexPath: IndexPath) {
-        if let photoId = photos[indexPath.row]["id"] as? Int {
-            ApiService.shared.likePhoto(id: photoId) { successful in
-                if successful {
-                    StatusBarNotificationBanner(title: "Liked photo", style: .success).show()
-                }
-            }
-        }
-    }
-    
     func commentButtonWasTapped(at indexPath: IndexPath) {
         self.selectedPhoto = photos[indexPath.row]
         self.performSegue(withIdentifier: "Comments", sender: self)
@@ -123,7 +114,7 @@ extension TimelineTableViewController: PhotoListCellDelegate {
 }
 
 
-// MARK: Image Picker
+// MARK: - Image Picker
 
 extension TimelineTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -147,11 +138,14 @@ extension TimelineTableViewController: UIImagePickerControllerDelegate, UINaviga
                         }
                         
                         ApiService.shared.uploadImage(image, caption: caption, name: fileName) { data, error in
-                            guard let data = data, error == nil else {
+                            guard let photo = data, let id = photo["id"] as? Int, error == nil else {
                                 return StatusBarNotificationBanner(title: "Failed to upload image", style: .danger).show()
                             }
+
+                            try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_following")
+                            try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_everyone")
                             
-                            self.photos.insert(data, at: 0)
+                            self.photos.insert(photo, at: 0)
                             self.tableView.reloadData()
                             
                             StatusBarNotificationBanner(title: "Uploaded successfully", style: .success).show()

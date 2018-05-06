@@ -134,7 +134,7 @@ class ApiService: NSObject {
             completion(settings)
         }
     }
-    
+
     /// Save the users settings
     func saveSettings(settings: [String: String], completion: @escaping(Bool) -> Void) {
         request(.put, url: "/api/users/settings", params: settings) { data in

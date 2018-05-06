@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Broadcaster
@@ -29,12 +28,15 @@ return [
     */
 
     'connections' => [
-
         'pusher' => [
             'driver' => 'pusher',
             'key' => env('PUSHER_APP_KEY'),
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
+            'beams' => [
+                'secret_key' => env('PUSHER_BEAMS_SECRET_KEY'),
+                'instance_id' => env('PUSHER_BEAMS_INSTANCE_ID'),
+            ],
             'options' => [
                 'cluster' => env('PUSHER_APP_CLUSTER'),
                 'encrypted' => true,
@@ -53,7 +55,5 @@ return [
         'null' => [
             'driver' => 'null',
         ],
-
     ],
-
 ];

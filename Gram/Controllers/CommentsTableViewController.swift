@@ -11,13 +11,16 @@ import UIKit
 class CommentsTableViewController: UITableViewController {
     
     var photoId: Int = 0
-    var comments: [[String: AnyObject]] = []
+    
     var commentField: UITextField?
+
+    var comments: [[String: AnyObject]] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationItem.title = "Comments"
+        
         navigationController?.navigationBar.prefersLargeTitles = false
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addCommentButtonWasTapped))
@@ -40,7 +43,7 @@ class CommentsTableViewController: UITableViewController {
             if let comment = self.commentField?.text {
                 ApiService.shared.leaveComment(forId: self.photoId, comment: comment, completion: { newComment in
                     if let newComment = newComment {
-                        self.comments.append(newComment)
+                        self.comments.insert(newComment, at: 0)
                         self.tableView.reloadData()
                     }
                 })
@@ -55,8 +58,13 @@ class CommentsTableViewController: UITableViewController {
         self.present(alertCtrl, animated: true, completion: nil)
     }
 
-    // MARK: - Table view data source
+}
 
+
+// MARK: - Table view data source
+
+extension CommentsTableViewController {
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return comments.count
     }

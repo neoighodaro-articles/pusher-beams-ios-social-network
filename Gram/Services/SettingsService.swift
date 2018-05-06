@@ -22,18 +22,13 @@ class SettingsService: NSObject {
             self.settings = newValue
         }
         get {
-            guard let settings = loadFromDefaults(),
-                settings["notification_likes"] != nil,
-                settings["notificcation_comments"] != nil,
-                settings["notification_followers"] != nil else {
-                    return [
-                        "likes": Setting.Notification.Likes.following.toString(),
-                        "comments": Setting.Notification.Comments.following.toString(),
-                        "new_follower": Setting.Notification.Followers.everyone.toString()
-                    ];
+            if let settings = loadFromDefaults(), settings["notificcation_comments"] != nil {
+                return settings
             }
             
-            return settings
+            return [
+                "notification_comments": Setting.Notification.Comments.following.toString()
+            ];
         }
     }
     
@@ -55,26 +50,16 @@ class SettingsService: NSObject {
         }
     }
     
-    func updateLikesNotificationSetting(_ status: Setting.Notification.Likes) {
-        self.allSettings["notification_likes"] = status.toString()
-        saveSettings()
-    }
-    
     func updateCommentsNotificationSetting(_ status: Setting.Notification.Comments) {
         self.allSettings["notification_comments"] = status.toString()
-        saveSettings()
-    }
-
-    func updateNewFollowersNotificationSetting(_ status: Setting.Notification.Followers) {
-        self.allSettings["notification_followers"] = status.toString()
         saveSettings()
     }
     
     func saveSettings(saveRemotely: Bool = true) {
         UserDefaults.standard.set(settings, forKey: SettingsService.key)
         
-        if saveRemotely {
-            ApiService.shared.saveSettings(settings: settings) { saved in }
+        if saveRemotely == true {
+            ApiService.shared.saveSettings(settings: settings) { _ in }
         }
     }
     

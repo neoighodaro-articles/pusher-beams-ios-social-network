@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Photo;
 use App\PhotoComment;
+use Illuminate\Http\Request;
+use App\Notifications\UserCommented;
 
 class PhotoCommentController extends Controller
 {
@@ -24,6 +25,10 @@ class PhotoCommentController extends Controller
             'comment' => $data['comment'],
             'user_id' => $request->user()->id,
         ]);
+
+        if ($photo->user->allowsCommentsNotifications($request->user())) {
+            $comment->notify(new UserCommented($request->user(), $photo, $comment));
+        }
 
         return response()->json(['status' => 'success', 'data' => $comment->load('user')]);
     }

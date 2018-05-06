@@ -19,7 +19,7 @@ class Photo extends Model
     /**
      * Relationships to eager load.
      */
-    protected $with = ['user', 'likes', 'comments'];
+    protected $with = ['user', 'comments'];
 
     /**
      * Defines the relationship with the User model.
@@ -27,14 +27,6 @@ class Photo extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    /**
-     * Defines the relationship with the PhotoLike model.
-     */
-    public function likes()
-    {
-        return $this->hasMany(PhotoLike::class);
     }
 
     /**

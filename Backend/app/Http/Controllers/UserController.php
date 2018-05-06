@@ -13,9 +13,8 @@ class UserController extends Controller
         $me = auth()->user();
 
         User::with('followers')->otherUsers()->get()->each(function ($user, $index) use (&$users) {
-            $following = $user->followers->where('follower_id', auth()->user()->id)->count();
             $users[$index] = $user;
-            $users[$index]['follows'] = (bool) $following;
+            $users[$index]['follows'] = $user->isFollowing(auth()->user());
         });
 
         return response()->json(['data' => $users]);

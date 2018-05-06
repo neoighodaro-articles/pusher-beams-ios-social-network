@@ -22,7 +22,5 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('/users', 'UserController@index');
     Route::get('/photos/{photo}/comments', 'PhotoCommentController@index');
     Route::post('/photos/{photo}/comments', 'PhotoCommentController@store');
-    Route::post('/photos/{photo}/like', 'PhotoLikeController@store');
-    Route::delete('/photos/{photo}/unlike', 'PhotoLikeController@destroy');
     Route::resource('/photos', 'PhotoController')->except(['create', 'show', 'edit']);
 });
