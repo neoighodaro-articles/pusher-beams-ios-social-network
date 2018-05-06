@@ -18,15 +18,15 @@ class TimelineTableViewController: UITableViewController {
     var selectedPhoto: [String: AnyObject]?
     
     let picker = UIImagePickerController()
+    
+    // MARK: View lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        picker.delegate = self
-        
-        SettingsService.shared.loadFromApi()
         
         self.reloadButtonWasPressed()
+        
+        self.picker.delegate = self
     }
     
     // MARK: Actions
@@ -80,22 +80,21 @@ extension TimelineTableViewController {
         let photo = photos[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "PhotoCell", for: indexPath) as! PhotoListTableViewCell
         
-        guard let user = photo["user"] as? [String: AnyObject] else {
-            return cell
-        }
-
-        cell.delegate = self
-        cell.indexPath = indexPath
-        cell.nameLabel.text = user["name"] as? String
-        
-        if let imageUrl = photo["image"] as? String {
-            Alamofire.request(imageUrl).responseData { response in
-                if response.error == nil, let data = response.data {
-                    cell.photo.image = UIImage(data: data)
+        if let user = photo["user"] as? [String: AnyObject] {
+            cell.delegate = self
+            cell.indexPath = indexPath
+            cell.nameLabel.text = user["name"] as? String
+            cell.photo.image = UIImage(named: "loading")
+            
+            if let imageUrl = photo["image"] as? String {
+                Alamofire.request(imageUrl).responseData { response in
+                    if response.error == nil, let data = response.data {
+                        cell.photo.image = UIImage(data: data)
+                    }
                 }
             }
         }
-
+        
         return cell
     }
 
@@ -120,41 +119,41 @@ extension TimelineTableViewController: UIImagePickerControllerDelegate, UINaviga
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         if let selectedImage = info["UIImagePickerControllerOriginalImage"] as? UIImage {
-            if let image = UIImageJPEGRepresentation(selectedImage, 0) {
-                self.dismiss(animated: true, completion: {
-                    var caption: UITextField?
+            guard let image = UIImageJPEGRepresentation(selectedImage, 0) else { return }
+            
+            let uploadPhotoHandler: (() -> Void)? = {
+                var caption: UITextField?
+                
+                let alert = UIAlertController(title: "Add Caption", message: nil, preferredStyle: .alert)
+                alert.addTextField(configurationHandler: { textfield in caption = textfield })
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "Save", style: .default, handler: { action in
+                    var filename = "upload.jpg"
+                    let caption = caption?.text ?? "No caption"
                     
-                    let alert = UIAlertController(title: "Add Caption", message: "Add a caption", preferredStyle: .alert)
+                    if let url = info[UIImagePickerControllerImageURL] as? NSURL, let name = url.lastPathComponent {
+                        filename = name
+                    }
                     
-                    alert.addTextField { textField in caption = textField }
-                    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-                    
-                    alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
-                        var fileName = "uploadedImage.jpg"
-                        let caption = (caption?.text)!
-                        
-                        if let url = info[UIImagePickerControllerImageURL] as? NSURL, let realName = url.lastPathComponent {
-                            fileName = realName
+                    ApiService.shared.uploadImage(image, caption: caption, name: filename) { data, error in
+                        guard let photo = data, let id = photo["id"] as? Int, error == nil else {
+                            return StatusBarNotificationBanner(title: "Failed to upload image", style: .danger).show()
                         }
                         
-                        ApiService.shared.uploadImage(image, caption: caption, name: fileName) { data, error in
-                            guard let photo = data, let id = photo["id"] as? Int, error == nil else {
-                                return StatusBarNotificationBanner(title: "Failed to upload image", style: .danger).show()
-                            }
-
-                            try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_following")
-                            try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_everyone")
-                            
-                            self.photos.insert(photo, at: 0)
-                            self.tableView.reloadData()
-                            
-                            StatusBarNotificationBanner(title: "Uploaded successfully", style: .success).show()
-                        }
-                    })
-                    
-                    self.present(alert, animated: true, completion: nil)
-                })
+                        try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_following")
+                        try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_everyone")
+                        
+                        self.photos.insert(photo, at: 0)
+                        self.tableView.reloadData()
+                        
+                        StatusBarNotificationBanner(title: "Uploaded successfully", style: .success).show()
+                    }
+                }))
+                
+                self.present(alert, animated: true, completion: nil)
             }
+
+            self.dismiss(animated: true, completion: uploadPhotoHandler)
         }
     }
 

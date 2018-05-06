@@ -7,32 +7,28 @@
 //
 
 import UIKit
+import NotificationBannerSwift
 
-class SearchTableViewController: UITableViewController, UserListCellFollowButtonDelegate {
+class SearchTableViewController: UITableViewController {
 
     var users: [[String: AnyObject]] = []
-
     
+    // MARK: View lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.loadUsersFromAPI()
-    }
-    
-    private func loadUsersFromAPI() {
-        ApiService.shared.fetchUsers(completion: { users in
+        ApiService.shared.fetchUsers { users in
             guard let users = users else {
-                let alert = UIAlertController(title: "Oops", message: "Unable ot fetch users", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "Okay", style: .default, handler: nil))
-                return self.present(alert, animated: true, completion: nil)
+                return StatusBarNotificationBanner(title: "Unable to fetch users.", style: .danger).show()
             }
             
             self.users = users
             self.tableView.reloadData()
-        })
+        }
     }
     
-    // MARK: - Table view data source
+    // MARK: Table view data source
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.users.count
@@ -46,12 +42,19 @@ class SearchTableViewController: UITableViewController, UserListCellFollowButton
         cell.indexPath = indexPath
         cell.textLabel?.text = user["name"] as? String
         
-        if let follows = user["follows"] as? Bool {
-            cell.setFollowStatus(status: follows)
+        if let following = user["follows"] as? Bool {
+            cell.setFollowStatus(following)
         }
 
         return cell
     }
+    
+}
+
+
+// MARK: - Follow button delegate
+
+extension SearchTableViewController: UserListCellFollowButtonDelegate {
     
     func followButtonTapped(at indexPath: IndexPath) {
         let user = self.users[indexPath.row]
@@ -65,4 +68,5 @@ class SearchTableViewController: UITableViewController, UserListCellFollowButton
             }
         }
     }
+    
 }

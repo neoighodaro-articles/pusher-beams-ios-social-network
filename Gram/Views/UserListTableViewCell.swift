@@ -18,24 +18,21 @@ class UserListTableViewCell: UITableViewCell {
     
     var delegate: UserListCellFollowButtonDelegate?
     
-    var followStatus: Bool = false
-    
     @IBOutlet weak var followButton: UIButton!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         self.selectionStyle = .none
-        self.setFollowStatus(status: false)
+        
+        self.setFollowStatus(false)
         self.followButton.layer.cornerRadius = 5
         self.followButton.setTitleColor(UIColor.white, for: .normal)
         self.followButton.addTarget(self, action: #selector(followButtonTapped(_:)), for: .touchUpInside)
     }
 
-    func setFollowStatus(status following: Bool) {
-        let title = following ? "Unfollow" : "Follow"
-        self.followStatus = following
+    func setFollowStatus(_ following: Bool) {
         self.followButton.backgroundColor = following ? UIColor.red : UIColor.blue
-        self.followButton.setTitle(title, for: .normal)
+        self.followButton.setTitle(following ? "Unfollow" : "Follow", for: .normal)
     }
     
     @objc private func followButtonTapped(_ sender: UIButton) {

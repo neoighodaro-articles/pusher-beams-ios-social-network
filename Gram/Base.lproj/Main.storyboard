@@ -94,7 +94,7 @@
                                     <segue destination="Hxh-vH-gdt" kind="show" identifier="Settings" id="cCp-Ej-cHH"/>
                                 </connections>
                             </barButtonItem>
-                            <barButtonItem style="plain" systemItem="refresh" id="2Lo-UB-hDM">
+                            <barButtonItem systemItem="refresh" id="2Lo-UB-hDM">
                                 <connections>
                                     <action selector="reloadButtonWasPressed:" destination="kn1-Rt-CNp" id="gvp-oJ-dRe"/>
                                 </connections>

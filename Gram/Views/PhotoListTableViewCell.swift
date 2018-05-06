@@ -15,10 +15,13 @@ protocol PhotoListCellDelegate {
 class PhotoListTableViewCell: UITableViewCell {
 
     @IBOutlet weak var nameLabel: UILabel!
+    
     @IBOutlet weak var photo: UIImageView!
+
     @IBOutlet weak var commentButton: UIButton!
 
     var indexPath: IndexPath?
+    
     var delegate: PhotoListCellDelegate?
     
     override func awakeFromNib() {
@@ -33,4 +36,5 @@ class PhotoListTableViewCell: UITableViewCell {
             delegate.commentButtonWasTapped(at: indexPath)
         }
     }
+    
 }

@@ -30,6 +30,7 @@ class LaunchViewController: UIViewController {
         super.viewDidAppear(animated)
         
         guard AuthService.shared.loggedIn() == false else {
+            SettingsService.shared.loadFromApi()
             return performSegue(withIdentifier: "Main", sender: self)
         }
         
