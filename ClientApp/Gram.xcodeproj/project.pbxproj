@@ -169,8 +169,8 @@
 			children = (
 				B51F300C209E124D00B4FD05 /* Gram.entitlements */,
 				B57988362090F3CC008F5BE6 /* Controllers */,
-				B55CD72E2091C3A900159DD4 /* Services */,
 				B5040FAA2098A60C004A810B /* Views */,
+				B55CD72E2091C3A900159DD4 /* Services */,
 				B57988272090DC44008F5BE6 /* Assets.xcassets */,
 				B57988202090DC44008F5BE6 /* AppDelegate.swift */,
 				B55CD72A2091BB2E00159DD4 /* AppConstants.swift */,
