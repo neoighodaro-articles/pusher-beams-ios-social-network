@@ -6,9 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserSetting extends Model
 {
-    protected $fillable = [
-        'notification_comments'
-    ];
+    protected $fillable = ['notification_comments'];
 
     protected $hidden = ['id', 'user_id'];
 

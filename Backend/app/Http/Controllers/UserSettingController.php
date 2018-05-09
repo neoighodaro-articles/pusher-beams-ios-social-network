@@ -18,7 +18,7 @@ class UserSettingController extends Controller
             'notification_comments' => 'in:Off,Following,Everyone',
         ]);
 
-        $updated = auth()->user()->settings()->update($settings);
+        $updated = $request->user()->settings()->update($settings);
 
         return response()->json(['status' => $updated ? 'success' : 'error']);
     }

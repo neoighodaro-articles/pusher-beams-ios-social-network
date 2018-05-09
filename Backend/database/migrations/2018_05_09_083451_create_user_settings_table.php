@@ -17,7 +17,8 @@ class CreateUserSettingsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
-            $table->enum('notification_comments', ['Off', 'Following', 'Everyone'])->default('Following');
+            $table->enum('notification_comments', ['Off', 'Following', 'Everyone'])
+              ->default('Following');
         });
     }
 

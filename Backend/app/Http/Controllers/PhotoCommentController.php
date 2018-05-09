@@ -30,6 +30,9 @@ class PhotoCommentController extends Controller
             $comment->notify(new UserCommented($request->user(), $photo, $comment));
         }
 
-        return response()->json(['status' => 'success', 'data' => $comment->load('user')]);
+        return response()->json([
+            'status' => 'success',
+            'data' => $comment->load('user')
+        ]);
     }
 }
