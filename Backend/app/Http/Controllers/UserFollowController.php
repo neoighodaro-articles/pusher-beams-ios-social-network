@@ -2,45 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use App\User;
 use App\UserFollow;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class UserFollowController extends Controller
 {
     public function follow(Request $request)
     {
-        $data = $request->validate([
-            'following_id' => [
-                'required',
-                'exists:users,id',
-                'not_in:' . Auth::user()->id,
-                Rule::unique('user_follows')->where(function ($query) {
-                    $query->where('follower_id', Auth::user()->id);
-                })
-            ]
-        ]);
+        $user = User::findOrFail($data['following_id']);
 
-        Auth::user()->following()->save(new UserFollow($data));
+        if ($request->user()->isFollowing($user) == false) {
+            $request->user()->following()->save(new UserFollow($data));
+        }
 
         return response()->json(['status' => 'success']);
     }
 
     public function unfollow(Request $request)
     {
-        $data = $request->validate([
-            'following_id' => [
-                'required',
-                'exists:users,id',
-                'not_in:' . Auth::user()->id,
-                Rule::exists('user_follows')->where(function ($query) {
-                    $query->where('follower_id', Auth::user()->id);
-                })
-            ]
-        ]);
+        $user = User::findOrFail($data['following_id']);
 
-        Auth::user()->following()->whereFollowingId($data['following_id'])->delete();
+        if ($request->user()->isFollowing($user)) {
+            $request->user()->following()->whereFollowingId($user->id)->delete();
+        }
 
         return response()->json(['status' => 'success']);
     }

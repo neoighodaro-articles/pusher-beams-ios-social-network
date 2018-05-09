@@ -78,17 +78,6 @@ class ApiService: NSObject {
         }
     }
     
-    /// Likes a photo
-    func likePhoto(id: Int, completion: @escaping(Bool) -> Void) {
-        request(.post, url: "/api/photos/\(id)/like") { data in
-            guard let res = data as? [String: String], res["status"] == "success" else {
-                return completion(false)
-            }
-            
-            completion(true)
-        }
-    }
-    
     /// Fetches comments for a photo
     func fetchComments(forPhoto id: Int, completion: @escaping([[String: AnyObject]]?) -> Void) {
         request(.get, url: "/api/photos/\(id)/comments") { data in

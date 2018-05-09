@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Alamofire
 
 class SettingsService: NSObject {
 
@@ -22,7 +21,7 @@ class SettingsService: NSObject {
             self.settings = newValue
         }
         get {
-            if let settings = loadFromDefaults(), settings["notificcation_comments"] != nil {
+            if let settings = loadFromDefaults(), settings["notification_comments"] != nil {
                 return settings
             }
             
@@ -68,29 +67,10 @@ class SettingsService: NSObject {
 enum Setting {
     
     enum Notification {
-
-        enum Likes: String {
-            case off = "Off"
-            case following = "Following"
-            case everyone = "Everyone"
-            
-            func toString() -> String {
-                return self.rawValue
-            }
-        }
         
         enum Comments: String {
             case off = "Off"
             case following = "Following"
-            case everyone = "Everyone"
-            
-            func toString() -> String {
-                return self.rawValue
-            }
-        }
-        
-        enum Followers: String {
-            case off = "Off"
             case everyone = "Everyone"
             
             func toString() -> String {

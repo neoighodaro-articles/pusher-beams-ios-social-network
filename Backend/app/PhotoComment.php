@@ -9,9 +9,9 @@ class PhotoComment extends Model
 {
     use Notifiable;
 
-    protected $fillable = ['photo_id', 'user_id', 'comment'];
-
     protected $with = ['user'];
+
+    protected $fillable = ['photo_id', 'user_id', 'comment'];
 
     public function scopeForPhoto($query, int $id)
     {

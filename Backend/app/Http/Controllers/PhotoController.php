@@ -48,39 +48,4 @@ class PhotoController extends Controller
             'data' => $photo->load(['user', 'comments'])
         ]);
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Photo  $photo
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Photo $photo)
-    {
-        $data = $request->validate(['caption' => 'required|between:1,1000']);
-
-        $updated = $photo->update($data);
-
-        $statusCode = $updated ? 200 : 401;
-        $status = $updated ? 'success' : 'error';
-
-        return response()->json(['status' => $status], $statusCode);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Photo  $photo
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Photo $photo)
-    {
-        $deleted = $photo->delete();
-
-        $statusCode = $deleted ? 200 : 401;
-        $status = $deleted ? 'success' : 'error';
-
-        return response()->json(['status' => $status], $statusCode);
-    }
 }
