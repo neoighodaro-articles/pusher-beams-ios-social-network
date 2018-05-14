@@ -10,10 +10,10 @@ class UserFollowController extends Controller
 {
     public function follow(Request $request)
     {
-        $user = User::findOrFail($data['following_id']);
+        $user = User::findOrFail($request->get('following_id'));
 
         if ($request->user()->isFollowing($user) == false) {
-            $request->user()->following()->save(new UserFollow($data));
+            $request->user()->following()->save(new UserFollow($request->only('following_id')));
         }
 
         return response()->json(['status' => 'success']);
@@ -21,11 +21,9 @@ class UserFollowController extends Controller
 
     public function unfollow(Request $request)
     {
-        $user = User::findOrFail($data['following_id']);
+        $user = User::findOrFail($request->get('following_id'));
 
-        if ($request->user()->isFollowing($user)) {
-            $request->user()->following()->whereFollowingId($user->id)->delete();
-        }
+        $request->user()->following()->whereFollowingId($user->id)->delete();
 
         return response()->json(['status' => 'success']);
     }

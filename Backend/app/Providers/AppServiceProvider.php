@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\{User, UserSetting};
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        \App\User::created(function ($user) {
+        User::created(function ($user) {
             $user->settings()->save(new UserSetting);
         });
     }

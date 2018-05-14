@@ -9,8 +9,8 @@
 import Foundation
 
 struct AppConstants {
-    static let API_URL = "http://7a5aa6c2.ngrok.io"
-    static let API_CLIENT_ID = "2"
-    static let API_CLIENT_SECRET = "uSl8durzBsNdIgV5YCXO3Z2gBF2CgE2K5gIhcsij"
-    static let PUSHER_INSTANCE_ID = "3ec4ac8e-4f3e-42f3-bd01-0e38d84194af"
+    static let API_URL = "http://127.0.0.1:8000"
+    static let API_CLIENT_ID = "API_CLIENT_ID"
+    static let API_CLIENT_SECRET = "API_CLIENT_SECRET"
+    static let PUSHER_INSTANCE_ID = "PUSHER_INSTANCE_ID"
 }

@@ -27,7 +27,7 @@ class User extends Authenticatable
 
     public function isFollowing(User $user): bool
     {
-        return $this->followers->where('follower_id', $user->id)->count() > 0;
+        return $this->following->where('following_id', $user->id)->count() > 0;
     }
 
     public function scopeOtherUsers($query)

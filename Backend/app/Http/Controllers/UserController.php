@@ -11,11 +11,9 @@ class UserController extends Controller
     {
         $users = [];
 
-        $me = auth()->user();
-
         User::with('followers')->otherUsers()->get()->each(function ($user, $index) use (&$users) {
             $users[$index] = $user;
-            $users[$index]['follows'] = $user->isFollowing(auth()->user());
+            $users[$index]['follows'] = auth()->user()->isFollowing($user);
         });
 
         return response()->json(['data' => $users]);
