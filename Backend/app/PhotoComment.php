@@ -13,6 +13,8 @@ class PhotoComment extends Model
 
     protected $fillable = ['photo_id', 'user_id', 'comment'];
 
+    protected $casts = ['photo_id' => 'int', 'user_id' => 'int'];
+
     public function scopeForPhoto($query, int $id)
     {
         return $query->where('photo_id', $id);

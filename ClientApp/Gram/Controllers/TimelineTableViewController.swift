@@ -13,9 +13,9 @@ import PushNotifications
 
 class TimelineTableViewController: UITableViewController {
     
-    var photos: [[String: AnyObject]] = []
+    var photos: Photos = []
     
-    var selectedPhoto: [String: AnyObject]?
+    var selectedPhoto: Photo?
     
     let picker = UIImagePickerController()
     
@@ -57,11 +57,9 @@ class TimelineTableViewController: UITableViewController {
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let vc = segue.destination as? CommentsTableViewController, let photo = selectedPhoto {
-            if let comments = photo["comments"] as? [[String: AnyObject]], let id = photo["id"] as? Int {
-                selectedPhoto = nil
-                vc.photoId = id
-                vc.comments = comments
-            }
+            selectedPhoto = nil
+            vc.photoId = photo.id
+            vc.comments = photo.comments
         }
     }
     
@@ -80,21 +78,17 @@ extension TimelineTableViewController {
         let photo = photos[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "PhotoCell", for: indexPath) as! PhotoListTableViewCell
         
-        if let user = photo["user"] as? [String: AnyObject] {
-            cell.delegate = self
-            cell.indexPath = indexPath
-            cell.nameLabel.text = user["name"] as? String
-            cell.photo.image = UIImage(named: "loading")
-            
-            if let imageUrl = photo["image"] as? String {
-                Alamofire.request(imageUrl).responseData { response in
-                    if response.error == nil, let data = response.data {
-                        cell.photo.image = UIImage(data: data)
-                    }
-                }
+        cell.delegate = self
+        cell.indexPath = indexPath
+        cell.nameLabel.text = photo.user.name
+        cell.photo.image = UIImage(named: "loading")
+        
+        Alamofire.request(photo.image).responseData { response in
+            if response.error == nil, let data = response.data {
+                cell.photo.image = UIImage(data: data)
             }
         }
-        
+
         return cell
     }
 
@@ -118,8 +112,8 @@ extension TimelineTableViewController: PhotoListCellDelegate {
 extension TimelineTableViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        if let selectedImage = info["UIImagePickerControllerOriginalImage"] as? UIImage {
-            guard let image = UIImageJPEGRepresentation(selectedImage, 0) else { return }
+        if let selected = info["UIImagePickerControllerOriginalImage"] as? UIImage {
+            guard let image = UIImageJPEGRepresentation(selected, 0) else { return }
             
             let uploadPhotoHandler: (() -> Void)? = {
                 var caption: UITextField?
@@ -135,13 +129,13 @@ extension TimelineTableViewController: UIImagePickerControllerDelegate, UINaviga
                         filename = name
                     }
                     
-                    ApiService.shared.uploadImage(image, caption: caption, name: filename) { data, error in
-                        guard let photo = data, let id = photo["id"] as? Int, error == nil else {
+                    ApiService.shared.uploadImage(image, caption: caption, name: filename) { photo, error in
+                        guard let photo = photo, error == nil else {
                             return StatusBarNotificationBanner(title: "Failed to upload image", style: .danger).show()
                         }
                         
-                        try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_following")
-                        try? PushNotifications.shared.subscribe(interest: "photo_\(id)-comment_everyone")
+                        try? PushNotifications.shared.subscribe(interest: "photo_\(photo.id)-comment_following")
+                        try? PushNotifications.shared.subscribe(interest: "photo_\(photo.id)-comment_everyone")
                         
                         self.photos.insert(photo, at: 0)
                         self.tableView.reloadData()

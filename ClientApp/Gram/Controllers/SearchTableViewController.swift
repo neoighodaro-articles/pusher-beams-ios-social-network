@@ -11,7 +11,7 @@ import NotificationBannerSwift
 
 class SearchTableViewController: UITableViewController {
 
-    var users: [[String: AnyObject]] = []
+    var users: Users = []
     
     // MARK: View lifecycle
 
@@ -40,9 +40,9 @@ class SearchTableViewController: UITableViewController {
         
         cell.delegate = self
         cell.indexPath = indexPath
-        cell.textLabel?.text = user["name"] as? String
+        cell.textLabel?.text = user.name
         
-        if let following = user["follows"] as? Bool {
+        if let following = user.follows {
             cell.setFollowStatus(following)
         }
 
@@ -58,14 +58,13 @@ extension SearchTableViewController: UserListCellFollowButtonDelegate {
     
     func followButtonTapped(at indexPath: IndexPath) {
         let user = self.users[indexPath.row]
+        let userFollows = user.follows ?? false
         
-        if let id = user["id"] as? Int, let follows = user["follows"] as? Bool {
-            ApiService.shared.toggleFollowStatus(forUserId: id, following: follows) { successful in
-                guard let successful = successful, successful else { return }
-                
-                self.users[indexPath.row]["follows"] = !follows as AnyObject
-                self.tableView.reloadData()
-            }
+        ApiService.shared.toggleFollowStatus(forUserId: user.id, following: userFollows) { successful in
+            guard let successful = successful, successful else { return }
+            
+            self.users[indexPath.row].follows = !userFollows
+            self.tableView.reloadData()
         }
     }
     

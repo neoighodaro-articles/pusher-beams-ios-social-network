@@ -57,46 +57,56 @@ class ApiService: NSObject {
     }
     
     /// Fetches a list of users
-    func fetchUsers(completion: @escaping([[String: AnyObject]]?) -> Void) {
+    func fetchUsers(completion: @escaping(Users?) -> Void) {
         request(.get, url: "/api/users") { data in
-            guard let res = data, let data = res["data"] as? [[String: AnyObject]] else {
-                return completion(nil)
+            if let data = self.responseToJsonStringData(response: data) {
+                if let obj = try? JSONDecoder().decode(Users.self, from: data) {
+                    return completion(obj)
+                }
             }
             
-            completion(data)
+            completion(nil)
         }
     }
     
     /// Fetches available posts
-    func fetchPosts(completion: @escaping([[String: AnyObject]]?) -> Void) {
+    func fetchPosts(completion: @escaping(Photos?) -> Void) {
         request(.get, url: "/api/photos") { data in
-            guard let res = data, let data = res["data"] as? [[String: AnyObject]] else {
-                return completion(nil)
+            if let data = self.responseToJsonStringData(response: data) {
+                if let obj = try? JSONDecoder().decode(Photos.self, from: data) {
+                    return completion(obj)
+                }
             }
             
-            completion(data)
+            completion(nil)
         }
     }
     
     /// Fetches comments for a photo
-    func fetchComments(forPhoto id: Int, completion: @escaping([[String: AnyObject]]?) -> Void) {
+    func fetchComments(forPhoto id: Int, completion: @escaping(PhotoComments?) -> Void) {
         request(.get, url: "/api/photos/\(id)/comments") { data in
-            guard let res = data, let comments = res["data"] as? [[String: AnyObject]] else {
-                return completion(nil)
+            if let data = self.responseToJsonStringData(response: data) {
+                if let obj = try? JSONDecoder().decode(PhotoComments.self, from: data) {
+                    return completion(obj)
+                }
             }
             
-            completion(comments)
+            completion(nil)
         }
     }
     
     /// Leave a comment on a photo
-    func leaveComment(forId id: Int, comment: String, completion: @escaping([String: AnyObject]?) -> Void) {
+    func leaveComment(forId id: Int, comment: String, completion: @escaping(PhotoComment?) -> Void) {
         request(.post, url: "/api/photos/\(id)/comments", params: ["comment": comment]) { data in
-            guard let res = data, let comment = res["data"] as? [String: AnyObject] else {
-                return completion(nil)
+            if let res = data, let data = res["data"] as? [String: AnyObject],
+                let json = try? JSONSerialization.data(withJSONObject: data, options: []),
+                let jsonString = String(data: json, encoding: .utf8),
+                let jsonData = jsonString.data(using: .utf8),
+                let obj = try? JSONDecoder().decode(PhotoComment.self, from: jsonData) {
+                    return completion(obj)
             }
             
-            completion(comment)
+            completion(nil)
         }
     }
     
@@ -136,7 +146,7 @@ class ApiService: NSObject {
     }
     
     /// Uploads a new image to the API
-    func uploadImage(_ image: Data, caption: String, name: String, completion: @escaping([String: AnyObject]?, ApiError?) -> Void) {
+    func uploadImage(_ image: Data, caption: String, name: String, completion: @escaping(Photo?, ApiError?) -> Void) {
         let url = self.url(appending: "/api/photos")
         
         // Handles multipart data
@@ -153,19 +163,17 @@ class ApiService: NSObject {
             headers: requestHeaders(),
             encodingCompletion: { encodingResult in
                 let uploadedHandler: (DataResponse<Any>) -> Void = { response in
-                    guard response.result.isSuccess, let resp = response.result.value as? [String: AnyObject] else {
-                        return completion(nil, .uploadError(nil))
+                    if response.result.isSuccess,
+                        let resp = response.result.value as? [String: AnyObject],
+                        let data = resp["data"] as? [String: AnyObject],
+                        let json = try? JSONSerialization.data(withJSONObject: data, options: []),
+                        let jsonString = String(data: json, encoding: .utf8),
+                        let jsonData = jsonString.data(using: .utf8),
+                        let obj = try? JSONDecoder().decode(Photo.self, from: jsonData) {
+                            return completion(obj, nil)
                     }
                     
-                    guard let data = resp["data"] as? [String: AnyObject] else {
-                        if let errors = resp["errors"] as? [String: [String]] {
-                            return completion(nil, .uploadError(errors))
-                        }
-                        
-                        return completion(nil, .uploadError(nil))
-                    }
-                    
-                    completion(data, nil)
+                    completion(nil, .uploadError(nil))
                 }
             
                 switch encodingResult {
@@ -179,13 +187,13 @@ class ApiService: NSObject {
 }
 
 
-extension ApiService {
+private extension ApiService {
     
-    private func url(appending: URLConvertible) -> URLConvertible {
+    func url(appending: URLConvertible) -> URLConvertible {
         return "\(AppConstants.API_URL)\(appending)"
     }
     
-    private func requestHeaders(auth: Bool = true) -> HTTPHeaders {
+    func requestHeaders(auth: Bool = true) -> HTTPHeaders {
         var headers: HTTPHeaders = ["Accept": "application/json"]
         
         if auth && AuthService.shared.loggedIn() {
@@ -196,7 +204,7 @@ extension ApiService {
     }
     
     /// Sends a request using Alamofire
-    private func request(_ method: HTTPMethod, url: URLConvertible, params: Parameters? = nil, auth: Bool = true, handler: @escaping ([String: AnyObject]?) -> Void) {
+    func request(_ method: HTTPMethod, url: URLConvertible, params: Parameters? = nil, auth: Bool = true, handler: @escaping ([String: AnyObject]?) -> Void) {
         let url = self.url(appending: url)
         
         Alamofire
@@ -209,6 +217,19 @@ extension ApiService {
                 
                 handler(data)
             }
+    }
+    
+    /// Converts the response to json data
+    func responseToJsonStringData(response data: [String: AnyObject]?) -> Data? {
+        if let res = data, let data = res["data"] as? [[String: AnyObject]] {
+            if let json = try? JSONSerialization.data(withJSONObject: data, options: []) {
+                if let jsonString = String(data: json, encoding: .utf8), let data = jsonString.data(using: .utf8) {
+                    return data
+                }
+            }
+        }
+        
+        return nil
     }
 
 }

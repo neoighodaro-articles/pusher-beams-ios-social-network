@@ -15,7 +15,7 @@ class CommentsTableViewController: UITableViewController {
     
     var commentField: UITextField?
 
-    var comments: [[String: AnyObject]] = []
+    var comments: PhotoComments = []
     
     // MARK: View lifecycle
 
@@ -48,10 +48,8 @@ class CommentsTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Comment", for: indexPath) as! CommentsListTableViewCell
         let comment = comments[indexPath.row]
         
-        if let user = comment["user"] as? [String: AnyObject] {
-            cell.username?.text = user["name"] as? String
-            cell.comment?.text = comment["comment"] as? String
-        }
+        cell.username?.text = comment.user.name
+        cell.comment?.text = comment.comment
         
         return cell
     }
