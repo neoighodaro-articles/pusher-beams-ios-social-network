@@ -1,5 +1,7 @@
 # Send push notifications in a social network iOS app
-This is a demo of how you can use [Pusher Beams](http://pusher.com/beams) within a social network application to send push notifications based on the users settings. The backend is built using Laravel. You can read about it [here](https://pusher.com/tutorials).
+This is a demo of how you can use [Pusher Beams](http://pusher.com/beams) within a social network application to send push notifications based on the users settings. The backend is built using Laravel. 
+
+View tutorial: [Part 1](https://pusher.com/tutorials/social-notifications-ios-part-1) [Part 2](https://pusher.com/tutorials/social-notifications-ios-part-1)
 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
